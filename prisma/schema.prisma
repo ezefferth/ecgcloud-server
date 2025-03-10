@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Instituicao {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  nome        String
+  contato     String     @default("00-00000-0000")
+  responsavel String
+  usuarios    Usuario[]
+  enderecoId  String?    @db.ObjectId
+  endereco    Endereco?  @relation(fields: [enderecoId], references: [id])
+  paciente    Paciente[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("instituicao")
+}
+
+model Endereco {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  tipoLogradouro String
+  logradouro     String
+  numero         String
+  bairro         String
+  cep            String
+  cidade         String
+  estado         String
+  pais           String        @default("BR")
+  instituicao    Instituicao[]
+  usuarios       Usuario[]
+  paciente       Paciente[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("endereco")
+}
+
+model Usuario {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  nome          String
+  email         String      @unique
+  contato       String      @default("00-00000-0000")
+  Instituicao   Instituicao @relation(fields: [instituicaoId], references: [id])
+  instituicaoId String      @db.ObjectId
+  Endereco      Endereco?   @relation(fields: [enderecoId], references: [id])
+  enderecoId    String?     @db.ObjectId
+  administ      Boolean
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Paciente {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  nome            String
+  email           String      @unique
+  contato         String      @default("00-00000-0000")
+  dataNascimento  String
+  genero          String
+  historicoMedico String?
+  observacoes     String?
+  Instituicao     Instituicao @relation(fields: [instituicaoId], references: [id])
+  instituicaoId   String      @db.ObjectId
+  Endereco        Endereco?   @relation(fields: [enderecoId], references: [id])
+  enderecoId      String?     @db.ObjectId
+  Ecg             Ecg[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("paciente")
+}
+
+model Ecg {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  pacienteId     String   @db.ObjectId
+  idDispositivo  String
+  paciente       Paciente @relation(fields: [pacienteId], references: [id])
+  sinalECG       String
+  freqAmostragem String
+  ritmoCardiaco  String
+  createdAt      DateTime @default(now())
+
+  @@map("ecg")
+}
