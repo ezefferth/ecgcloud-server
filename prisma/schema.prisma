@@ -16,7 +16,7 @@ datasource db {
 model Instituicao {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   nome        String
-  contato     String     @default("00-00000-0000")
+  contato     String[]
   responsavel String
   usuarios    Usuario[]
   enderecoId  String?    @db.ObjectId
@@ -51,12 +51,12 @@ model Usuario {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   nome          String
   email         String      @unique
-  contato       String      @default("00-00000-0000")
+  contato       String[]
   Instituicao   Instituicao @relation(fields: [instituicaoId], references: [id])
   instituicaoId String      @db.ObjectId
   Endereco      Endereco?   @relation(fields: [enderecoId], references: [id])
   enderecoId    String?     @db.ObjectId
-  administ      Boolean
+  admin         Boolean
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -65,7 +65,7 @@ model Paciente {
   id              String      @id @default(auto()) @map("_id") @db.ObjectId
   nome            String
   email           String      @unique
-  contato         String      @default("00-00000-0000")
+  contato         String[]
   dataNascimento  String
   genero          String
   historicoMedico String?
