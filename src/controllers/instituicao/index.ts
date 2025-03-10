@@ -15,7 +15,7 @@ export async function CriarInstituicao(request: Request, response: Response) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       return response.status(409).json(e);
     }
-    return response.status(500).json({ erro: "Erro no servidor" });
+    return response.status(500).json({ erro: "Erro no servidor", detalhe: e });
   }
 }
 
