@@ -30,12 +30,17 @@ export async function LerEcgs(request: Request, response: Response) {
     const ecgs = await prismaClient.ecg.findMany();
     return response.status(200).json(ecgs);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao buscar ECGs" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
 export async function AtualizarEcg(request: Request, response: Response) {
-  const { id } = request.params;
+  const { id } = request.body;
   const { pacienteId, idDispositivo, sinalECG, freqAmostragem, ritmoCardiaco } =
     request.body;
 
@@ -52,18 +57,28 @@ export async function AtualizarEcg(request: Request, response: Response) {
     });
     return response.status(200).json(ecg);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao atualizar ECG" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
 export async function RemoverEcg(request: Request, response: Response) {
-  const { id } = request.params;
+  const { id } = request.body;
   try {
     await prismaClient.ecg.delete({
       where: { id },
     });
     return response.status(200).json({ message: "ECG removido com sucesso" });
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao remover ECG" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }

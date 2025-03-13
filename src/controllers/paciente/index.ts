@@ -26,7 +26,6 @@ export async function CriarPaciente(request: Request, response: Response) {
         historicoMedico,
         observacoes,
         instituicaoId,
-        enderecoId,
       },
     });
     return response.status(200).json(paciente);
@@ -43,7 +42,12 @@ export async function LerPacientes(request: Request, response: Response) {
     const pacientes = await prismaClient.paciente.findMany();
     return response.status(200).json(pacientes);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao buscar pacientes" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
@@ -58,7 +62,6 @@ export async function AtualizarPaciente(request: Request, response: Response) {
     historicoMedico,
     observacoes,
     instituicaoId,
-    enderecoId,
   } = request.body;
 
   try {
@@ -73,17 +76,21 @@ export async function AtualizarPaciente(request: Request, response: Response) {
         historicoMedico,
         observacoes,
         instituicaoId,
-        enderecoId,
       },
     });
     return response.status(200).json(paciente);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao atualizar paciente" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
 export async function RemoverPaciente(request: Request, response: Response) {
-  const { id } = request.params;
+  const { id } = request.body;
   try {
     await prismaClient.paciente.delete({
       where: { id },
@@ -92,6 +99,11 @@ export async function RemoverPaciente(request: Request, response: Response) {
       .status(200)
       .json({ message: "Paciente removido com sucesso" });
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao remover paciente" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }

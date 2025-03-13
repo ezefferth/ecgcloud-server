@@ -3,11 +3,11 @@ import { prismaClient } from "../../prismaClient";
 import { Prisma } from "@prisma/client";
 
 export async function CriarInstituicao(request: Request, response: Response) {
-  const { nome, contato, responsavel, enderecoId } = request.body;
+  const { nome, contato, responsavel } = request.body;
 
   try {
     const instituicao = await prismaClient.instituicao.create({
-      data: { nome, contato, responsavel, enderecoId },
+      data: { nome, contato, responsavel },
     });
 
     return response.status(200).json(instituicao);
@@ -24,7 +24,12 @@ export async function LerInstituicoes(request: Request, response: Response) {
     const instituicoes = await prismaClient.instituicao.findMany();
     return response.status(200).json(instituicoes);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao buscar instituições" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
@@ -32,7 +37,7 @@ export async function AtualizarInstituicao(
   request: Request,
   response: Response
 ) {
-  const { id } = request.params;
+  const { id } = request.body;
   const { nome, contato, responsavel, enderecoId } = request.body;
 
   try {
@@ -42,17 +47,21 @@ export async function AtualizarInstituicao(
         nome,
         contato,
         responsavel,
-        enderecoId,
       },
     });
     return response.status(200).json(instituicao);
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao atualizar instituição" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
 
 export async function RemoverInstituicao(request: Request, response: Response) {
-  const { id } = request.params;
+  const { id } = request.body;
   try {
     await prismaClient.instituicao.delete({
       where: { id },
@@ -61,6 +70,11 @@ export async function RemoverInstituicao(request: Request, response: Response) {
       .status(200)
       .json({ message: "Instituição removida com sucesso" });
   } catch (e) {
-    return response.status(500).json({ erro: "Erro ao remover instituição" });
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      // Trata erros conhecidos do Prisma
+      return response.status(409).json({ erro: e.code });
+    }
+    // Trata outros erros desconhecidos
+    return response.status(500).json({ erro: "Erro no servidor" });
   }
 }
